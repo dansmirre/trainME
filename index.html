@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#12324a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Тренировки" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Журнал тренировок</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="icon.svg" />
+    <link rel="stylesheet" href="styles.css?v=4" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <img src="icon.svg" alt="" class="brand-mark" />
+          <div>
+            <h1>Журнал тренировок</h1>
+            <p id="storageStatus">Локальное сохранение</p>
+          </div>
+        </div>
+        <div class="top-actions">
+          <button class="home-btn" id="homeBtn" type="button">Дом</button>
+          <button class="icon-btn" id="exportJsonBtn" type="button" title="Экспорт JSON" aria-label="Экспорт JSON">↓</button>
+          <button class="icon-btn" id="importJsonBtn" type="button" title="Импорт JSON" aria-label="Импорт JSON">↑</button>
+          <button class="icon-btn" id="exportCsvBtn" type="button" title="Экспорт CSV" aria-label="Экспорт CSV">CSV</button>
+        </div>
+      </header>
+
+      <main>
+        <section id="dashboardView" class="view active-view" aria-label="Дашборд">
+          <section class="summary-grid" aria-label="Сводка">
+            <article class="metric">
+              <span>Записей</span>
+              <strong id="metricEntries">0</strong>
+            </article>
+            <article class="metric">
+              <span>Объем</span>
+              <strong id="metricVolume">0</strong>
+            </article>
+            <article class="metric">
+              <span>Средний RPE</span>
+              <strong id="metricRpe">-</strong>
+            </article>
+            <article class="metric">
+              <span>Последняя</span>
+              <strong id="metricLast">-</strong>
+            </article>
+          </section>
+
+          <section class="dashboard-grid">
+            <section class="panel start-panel">
+              <div class="panel-head">
+                <h2>Записать тренировку</h2>
+              </div>
+              <div class="category-grid">
+                <button class="category-card heavy-card" type="button" data-open-session="Тяжелая">
+                  <strong>Тяжелая</strong>
+                  <span>Силовая работа, RIR 1-2</span>
+                </button>
+                <button class="category-card medium-card" type="button" data-open-session="Средняя">
+                  <strong>Средняя</strong>
+                  <span>Работа близко к отказу в последних подходах</span>
+                </button>
+                <button class="category-card light-card" type="button" data-open-session="Легкая">
+                  <strong>Легкая</strong>
+                  <span>Восстановительный объем, RIR 3-4</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h2>Статистика по типам</h2>
+              </div>
+              <div id="sessionStats" class="session-stats"></div>
+            </section>
+          </section>
+
+          <section class="panel dashboard-history">
+            <div class="panel-head">
+              <h2>Последние записи</h2>
+              <div class="segmented">
+                <button type="button" class="segment active" data-filter="all">Все</button>
+                <button type="button" class="segment" data-filter="Тяжелая">Т</button>
+                <button type="button" class="segment" data-filter="Средняя">С</button>
+                <button type="button" class="segment" data-filter="Легкая">Л</button>
+              </div>
+            </div>
+            <div id="entriesList" class="entries-list dashboard-list"></div>
+          </section>
+        </section>
+
+        <section id="entryView" class="view" aria-label="Запись тренировки">
+          <section class="page-title">
+            <div>
+              <span>Новая запись</span>
+              <h2 id="entryTitle">Тяжелая тренировка</h2>
+            </div>
+            <button class="secondary-btn" id="inlineHomeBtn" type="button">Дом</button>
+          </section>
+
+          <section class="panel entry-panel">
+            <div class="tabs" role="tablist" aria-label="Тип тренировки">
+              <button class="tab active" type="button" data-session="Тяжелая">Тяжелая</button>
+              <button class="tab" type="button" data-session="Средняя">Средняя</button>
+              <button class="tab" type="button" data-session="Легкая">Легкая</button>
+            </div>
+
+            <form id="entryForm" class="entry-form">
+              <div class="field compact">
+                <label for="date">Дата</label>
+                <input id="date" name="date" type="date" required />
+              </div>
+              <div class="field compact">
+                <label for="week">Неделя</label>
+                <input id="week" name="week" type="number" min="1" max="52" inputmode="numeric" required />
+              </div>
+              <div class="field wide">
+                <label for="exercise">Упражнение</label>
+                <select id="exercise" name="exercise" required></select>
+              </div>
+              <div class="field compact">
+                <label for="plan">План</label>
+                <input id="plan" name="plan" type="text" readonly />
+              </div>
+              <div class="field compact">
+                <label for="weight">Вес</label>
+                <input id="weight" name="weight" type="number" min="0" step="0.5" inputmode="decimal" />
+              </div>
+              <div class="field compact">
+                <label for="reps">Повторы всего</label>
+                <input id="reps" name="reps" type="number" min="0" step="1" inputmode="numeric" />
+              </div>
+              <div class="field compact">
+                <label for="rpe">RPE</label>
+                <input id="rpe" name="rpe" type="number" min="1" max="10" step="0.5" inputmode="decimal" />
+              </div>
+              <div class="field compact">
+                <label for="rir">RIR</label>
+                <input id="rir" name="rir" type="number" min="0" max="5" step="1" inputmode="numeric" />
+              </div>
+              <div class="field wide">
+                <label for="notes">Заметки</label>
+                <input id="notes" name="notes" type="text" autocomplete="off" />
+              </div>
+              <div class="form-actions">
+                <button class="primary-btn" type="submit">Сохранить</button>
+                <button class="secondary-btn" id="clearFormBtn" type="button">Очистить</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="content-grid">
+            <section class="panel">
+              <div class="panel-head">
+                <h2>План</h2>
+                <select id="cycleFilter" aria-label="Неделя цикла">
+                  <option value="1">Неделя 1</option>
+                  <option value="2">Неделя 2</option>
+                  <option value="3">Неделя 3</option>
+                  <option value="4">Неделя 4</option>
+                </select>
+              </div>
+              <div id="planList" class="plan-list"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h2>Записи категории</h2>
+              </div>
+              <div id="categoryEntriesList" class="entries-list"></div>
+            </section>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <input id="importFile" type="file" accept="application/json,.json" hidden />
+    <script src="app.js?v=4" type="module"></script>
+  </body>
+</html>
